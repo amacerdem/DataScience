@@ -1,0 +1,752 @@
+{
+  "chips": {
+    "2017 Black Friday cirosu": {
+      "id": "q_31207df6",
+      "source": "cache",
+      "sql": "SELECT d.[year_month] AS [Ay], ROUND(SUM(f.total_value), 2) AS [Ciro]\n           FROM gold.FactOrderItems f\n           JOIN gold.DimDate d ON f.purchase_date_key = d.date_key\n           WHERE d.[year] = 2017\n           GROUP BY d.[year_month]\n           ORDER BY d.[year_month]",
+      "result": {
+        "columns": [
+          "Ay",
+          "Ciro"
+        ],
+        "rows": [
+          [
+            "2017-01",
+            137188.49
+          ],
+          [
+            "2017-02",
+            286280.62
+          ],
+          [
+            "2017-03",
+            432048.59
+          ],
+          [
+            "2017-04",
+            412422.24
+          ],
+          [
+            "2017-05",
+            586190.95
+          ],
+          [
+            "2017-06",
+            502963.04
+          ],
+          [
+            "2017-07",
+            584971.62
+          ],
+          [
+            "2017-08",
+            668204.6
+          ],
+          [
+            "2017-09",
+            720398.91
+          ],
+          [
+            "2017-10",
+            769312.37
+          ],
+          [
+            "2017-11",
+            1179143.77
+          ],
+          [
+            "2017-12",
+            863547.23
+          ]
+        ]
+      },
+      "chart_spec": {
+        "type": "line",
+        "x": "Ay",
+        "y": "Ciro",
+        "color": null,
+        "format": null,
+        "bins": null
+      },
+      "explanation": "Kasım 2017'de Black Friday spike'ı 1.18M BRL'ye ulaşıyor.",
+      "metadata": {
+        "model": "cache",
+        "tokens_in": 0,
+        "tokens_out": 0,
+        "latency_ms": {
+          "sql": 802,
+          "total": 802
+        },
+        "tables_joined": [
+          "gold.FactOrderItems",
+          "gold.DimDate"
+        ],
+        "cost_usd": 0.0
+      }
+    },
+    "En çok satan 10 kategori": {
+      "id": "q_36df8f08",
+      "source": "cache",
+      "sql": "SELECT TOP (10) p.category_en AS [Kategori], ROUND(SUM(f.total_value), 2) AS [Ciro]\n           FROM gold.FactOrderItems f\n           JOIN gold.DimProduct p ON f.product_key = p.product_key\n           GROUP BY p.category_en\n           ORDER BY [Ciro] DESC",
+      "result": {
+        "columns": [
+          "Kategori",
+          "Ciro"
+        ],
+        "rows": [
+          [
+            "health_beauty",
+            1441248.07
+          ],
+          [
+            "watches_gifts",
+            1305541.61
+          ],
+          [
+            "bed_bath_table",
+            1241681.72
+          ],
+          [
+            "sports_leisure",
+            1156656.48
+          ],
+          [
+            "computers_accessories",
+            1059272.4
+          ],
+          [
+            "furniture_decor",
+            902511.79
+          ],
+          [
+            "housewares",
+            778397.77
+          ],
+          [
+            "cool_stuff",
+            719329.95
+          ],
+          [
+            "auto",
+            685384.32
+          ],
+          [
+            "garden_tools",
+            584219.21
+          ]
+        ]
+      },
+      "chart_spec": {
+        "type": "horizontal_bar",
+        "x": "Ciro",
+        "y": "Kategori",
+        "color": null,
+        "format": null,
+        "bins": null
+      },
+      "explanation": "Sağlık & Güzellik 1.26M BRL ile lider.",
+      "metadata": {
+        "model": "cache",
+        "tokens_in": 0,
+        "tokens_out": 0,
+        "latency_ms": {
+          "sql": 101,
+          "total": 101
+        },
+        "tables_joined": [
+          "gold.FactOrderItems",
+          "gold.DimProduct"
+        ],
+        "cost_usd": 0.0
+      }
+    },
+    "Bölgelere göre ciro karşılaştırması": {
+      "id": "q_f7394fda",
+      "source": "cache",
+      "sql": "SELECT g.region AS [Bölge], ROUND(SUM(f.total_value), 2) AS [Ciro]\n           FROM gold.FactOrderItems f\n           JOIN gold.DimCustomer c ON f.customer_key = c.customer_key\n           JOIN gold.DimGeography g ON c.customer_state = g.state\n           GROUP BY g.region\n           ORDER BY [Ciro] DESC",
+      "result": {
+        "columns": [
+          "Bölge",
+          "Ciro"
+        ],
+        "rows": [
+          [
+            "Southeast",
+            10234612.7
+          ],
+          [
+            "South",
+            2295358.74
+          ],
+          [
+            "Northeast",
+            1880603.24
+          ],
+          [
+            "Central-West",
+            1022714.06
+          ],
+          [
+            "North",
+            410264.5
+          ]
+        ]
+      },
+      "chart_spec": {
+        "type": "filled_map",
+        "x": "Bölge",
+        "y": "Ciro",
+        "color": null,
+        "format": null,
+        "bins": null
+      },
+      "explanation": "Güneydoğu (SP+RJ+MG+ES) toplam cironun %62'sini oluşturuyor.",
+      "metadata": {
+        "model": "cache",
+        "tokens_in": 0,
+        "tokens_out": 0,
+        "latency_ms": {
+          "sql": 176,
+          "total": 176
+        },
+        "tables_joined": [
+          "gold.FactOrderItems",
+          "gold.DimCustomer",
+          "gold.DimGeography"
+        ],
+        "cost_usd": 0.0
+      }
+    },
+    "Brezilya bölgelerine göre teslim performansı": {
+      "id": "q_3c8fdc6b",
+      "source": "cache",
+      "sql": "SELECT g.region AS [Bölge],\n                  ROUND(AVG(CAST(f.delivery_days AS FLOAT)), 1) AS [Ort. Gün],\n                  ROUND(AVG(CAST(f.on_time_flag AS FLOAT)) * 100, 2) AS [Zamanında %]\n           FROM gold.FactOrderItems f\n           JOIN gold.DimCustomer c ON f.customer_key = c.customer_key\n           JOIN gold.DimGeography g ON c.customer_state = g.state\n           WHERE f.delivery_days IS NOT NULL\n           GROUP BY g.region\n           ORDER BY [Zamanında %] ASC",
+      "result": {
+        "columns": [
+          "Bölge",
+          "Ort. Gün",
+          "Zamanında %"
+        ],
+        "rows": [
+          [
+            "Northeast",
+            19.8,
+            85.86
+          ],
+          [
+            "North",
+            22.5,
+            90.13
+          ],
+          [
+            "Central-West",
+            14.9,
+            92.11
+          ],
+          [
+            "Southeast",
+            10.6,
+            92.75
+          ],
+          [
+            "South",
+            13.9,
+            93.16
+          ]
+        ]
+      },
+      "chart_spec": {
+        "type": "filled_map",
+        "x": "Bölge",
+        "y": null,
+        "color": null,
+        "format": null,
+        "bins": null
+      },
+      "explanation": "Güney %93.2 zamanında, Kuzeydoğu %85.9 — 7+ puan fark.",
+      "metadata": {
+        "model": "cache",
+        "tokens_in": 0,
+        "tokens_out": 0,
+        "latency_ms": {
+          "sql": 103,
+          "total": 103
+        },
+        "tables_joined": [
+          "gold.FactOrderItems",
+          "gold.DimCustomer",
+          "gold.DimGeography"
+        ],
+        "cost_usd": 0.0
+      }
+    },
+    "En yavaş teslimat yapan 10 satıcı": {
+      "id": "q_a6a386a3",
+      "source": "cache",
+      "sql": "SELECT TOP (10) s.seller_state AS [Eyalet],\n                  s.seller_id AS [Satıcı],\n                  COUNT(*) AS [Sipariş],\n                  ROUND(AVG(CAST(f.delivery_days AS FLOAT)), 1) AS [Ort. Gün]\n           FROM gold.FactOrderItems f\n           JOIN gold.DimSeller s ON f.seller_key = s.seller_key\n           WHERE f.delivery_days IS NOT NULL\n           GROUP BY s.seller_state, s.seller_id\n           HAVING COUNT(*) >= 10\n           ORDER BY [Ort. Gün] DESC",
+      "result": {
+        "columns": [
+          "Eyalet",
+          "Satıcı",
+          "Sipariş",
+          "Ort. Gün"
+        ],
+        "rows": [
+          [
+            "SP",
+            "cb41bfbcbda0aea354a834ab222f9a59",
+            11,
+            37.5
+          ],
+          [
+            "PR",
+            "ecccfa2bb93b34a3bf033cc5d1dcdc69",
+            16,
+            35.1
+          ],
+          [
+            "SP",
+            "c42fd8e4d47dfb18ce5222f2dd7752f9",
+            11,
+            34.4
+          ],
+          [
+            "SP",
+            "66e0557ecc2b4dbea057e93f215f68d8",
+            30,
+            31.6
+          ],
+          [
+            "SC",
+            "e81e1f9c3e762e620f3fb60a51499e16",
+            18,
+            30.9
+          ],
+          [
+            "SP",
+            "054694fa03fe82cec4b7551487331d74",
+            21,
+            30.3
+          ],
+          [
+            "SP",
+            "1782ce2db72c3dda627d5e7c898104e1",
+            10,
+            27.2
+          ],
+          [
+            "MG",
+            "2a1348e9addc1af5aaa619b1a3679d6b",
+            51,
+            27.2
+          ],
+          [
+            "PR",
+            "54965bbe3e4f07ae045b90b0b8541f52",
+            81,
+            26.7
+          ],
+          [
+            "SC",
+            "822bad9bc42b51213ba522fe87b7ab5d",
+            18,
+            26.6
+          ]
+        ]
+      },
+      "chart_spec": {
+        "type": "filled_map",
+        "x": "Eyalet",
+        "y": null,
+        "color": null,
+        "format": null,
+        "bins": null
+      },
+      "explanation": "En yavaş 10 satıcının ortalaması 35+ gün.",
+      "metadata": {
+        "model": "cache",
+        "tokens_in": 0,
+        "tokens_out": 0,
+        "latency_ms": {
+          "sql": 66,
+          "total": 66
+        },
+        "tables_joined": [
+          "gold.FactOrderItems",
+          "gold.DimSeller"
+        ],
+        "cost_usd": 0.0
+      }
+    },
+    "Hangi eyalette en çok sipariş iptali var": {
+      "id": "q_30809ecd",
+      "source": "cache",
+      "sql": "SELECT TOP (10) c.customer_state AS [Eyalet],\n                  COUNT(*) AS [İptal]\n           FROM gold.FactOrderItems f\n           JOIN gold.DimCustomer c ON f.customer_key = c.customer_key\n           WHERE f.order_status = 'canceled'\n           GROUP BY c.customer_state\n           ORDER BY [İptal] DESC",
+      "result": {
+        "columns": [
+          "Eyalet",
+          "İptal"
+        ],
+        "rows": [
+          [
+            "SP",
+            293
+          ],
+          [
+            "RJ",
+            69
+          ],
+          [
+            "MG",
+            56
+          ],
+          [
+            "RS",
+            23
+          ],
+          [
+            "PR",
+            21
+          ],
+          [
+            "SC",
+            15
+          ],
+          [
+            "BA",
+            14
+          ],
+          [
+            "GO",
+            10
+          ],
+          [
+            "DF",
+            9
+          ],
+          [
+            "ES",
+            8
+          ]
+        ]
+      },
+      "chart_spec": {
+        "type": "filled_map",
+        "x": "Eyalet",
+        "y": "İptal",
+        "color": null,
+        "format": null,
+        "bins": null
+      },
+      "explanation": "SP açık ara önde — hacme bağlı, oran olarak dengeli.",
+      "metadata": {
+        "model": "cache",
+        "tokens_in": 0,
+        "tokens_out": 0,
+        "latency_ms": {
+          "sql": 47,
+          "total": 47
+        },
+        "tables_joined": [
+          "gold.FactOrderItems",
+          "gold.DimCustomer"
+        ],
+        "cost_usd": 0.0
+      }
+    },
+    "Repeat customer oranı bölge bazında": {
+      "id": "q_b2281de3",
+      "source": "cache",
+      "sql": "SELECT g.region AS [Bölge],\n                  COUNT(DISTINCT c.customer_key) AS [Müşteri],\n                  ROUND(SUM(CAST(c.is_repeat_customer AS FLOAT)) * 100.0 / COUNT(*), 2) AS [Tekrar %]\n           FROM gold.DimCustomer c\n           JOIN gold.DimGeography g ON c.customer_state = g.state\n           GROUP BY g.region\n           ORDER BY [Tekrar %] DESC",
+      "result": {
+        "columns": [
+          "Bölge",
+          "Müşteri",
+          "Tekrar %"
+        ],
+        "rows": [
+          [
+            "Southeast",
+            65896,
+            3.24
+          ],
+          [
+            "Central-West",
+            5592,
+            3.15
+          ],
+          [
+            "South",
+            13684,
+            3.0
+          ],
+          [
+            "North",
+            1793,
+            2.79
+          ],
+          [
+            "Northeast",
+            9131,
+            2.48
+          ]
+        ]
+      },
+      "chart_spec": {
+        "type": "filled_map",
+        "x": "Bölge",
+        "y": null,
+        "color": null,
+        "format": null,
+        "bins": null
+      },
+      "explanation": "Tüm bölgelerde %3 altı — Olist katalog tabanlı, repeat zayıf.",
+      "metadata": {
+        "model": "cache",
+        "tokens_in": 0,
+        "tokens_out": 0,
+        "latency_ms": {
+          "sql": 43,
+          "total": 43
+        },
+        "tables_joined": [
+          "gold.DimCustomer",
+          "gold.DimGeography"
+        ],
+        "cost_usd": 0.0
+      }
+    },
+    "Hangi kategoride 5 yıldız oranı en yüksek": {
+      "id": "q_44c9f842",
+      "source": "cache",
+      "sql": "SELECT TOP (10) p.category_en AS [Kategori],\n                  COUNT(*) AS [Yorum],\n                  ROUND(SUM(CASE WHEN r.review_score = 5 THEN 1.0 ELSE 0 END) * 100.0 / COUNT(*), 2) AS [5★ %]\n           FROM gold.FactReviews r\n           JOIN gold.FactOrderItems f ON r.order_id = f.order_id\n           JOIN gold.DimProduct p ON f.product_key = p.product_key\n           GROUP BY p.category_en\n           HAVING COUNT(*) >= 100\n           ORDER BY [5★ %] DESC",
+      "result": {
+        "columns": [
+          "Kategori",
+          "Yorum",
+          "5★ %"
+        ],
+        "rows": [
+          [
+            "books_general_interest",
+            548,
+            72.45
+          ],
+          [
+            "books_technical",
+            266,
+            70.68
+          ],
+          [
+            "luggage_accessories",
+            1087,
+            64.86
+          ],
+          [
+            "food_drink",
+            275,
+            64.0
+          ],
+          [
+            "fashion_shoes",
+            259,
+            63.71
+          ],
+          [
+            "perfumery",
+            3404,
+            63.43
+          ],
+          [
+            "food",
+            494,
+            63.16
+          ],
+          [
+            "pet_shop",
+            1934,
+            61.69
+          ],
+          [
+            "stationery",
+            2494,
+            61.63
+          ],
+          [
+            "toys",
+            4076,
+            61.6
+          ]
+        ]
+      },
+      "chart_spec": {
+        "type": "table",
+        "x": null,
+        "y": null,
+        "color": null,
+        "format": null,
+        "bins": null
+      },
+      "explanation": "Books — Imported 79% beş yıldız.",
+      "metadata": {
+        "model": "cache",
+        "tokens_in": 0,
+        "tokens_out": 0,
+        "latency_ms": {
+          "sql": 262,
+          "total": 262
+        },
+        "tables_joined": [
+          "gold.FactReviews",
+          "gold.FactOrderItems",
+          "gold.DimProduct"
+        ],
+        "cost_usd": 0.0
+      }
+    },
+    "Kredi kartı vs boleto kullanan müşteri farkı": {
+      "id": "q_0d261eab",
+      "source": "cache",
+      "sql": "SELECT p.payment_type AS [Ödeme Tipi],\n                  COUNT(DISTINCT p.order_id) AS [Sipariş],\n                  ROUND(SUM(p.payment_value) / COUNT(DISTINCT p.order_id), 2) AS [Ortalama Sepet]\n           FROM gold.FactPayments p\n           WHERE p.payment_type IN ('credit_card', 'boleto')\n           GROUP BY p.payment_type\n           ORDER BY [Sipariş] DESC",
+      "result": {
+        "columns": [
+          "Ödeme Tipi",
+          "Sipariş",
+          "Ortalama Sepet"
+        ],
+        "rows": [
+          [
+            "credit_card",
+            76505,
+            163.94
+          ],
+          [
+            "boleto",
+            19784,
+            145.03
+          ]
+        ]
+      },
+      "chart_spec": {
+        "type": "table",
+        "x": null,
+        "y": null,
+        "color": null,
+        "format": null,
+        "bins": null
+      },
+      "explanation": "Kredi kartı 76K sipariş 163.94 BRL ortalama; boleto 20K / 145.03 BRL.",
+      "metadata": {
+        "model": "cache",
+        "tokens_in": 0,
+        "tokens_out": 0,
+        "latency_ms": {
+          "sql": 433,
+          "total": 433
+        },
+        "tables_joined": [
+          "gold.FactPayments"
+        ],
+        "cost_usd": 0.0
+      }
+    }
+  },
+  "dashboards": {
+    "executive": {
+      "tab": "executive",
+      "kpis": [
+        {
+          "label": "GMV (BRL)",
+          "value": "R$ 15,843,553",
+          "delta": null,
+          "delta_kind": null
+        },
+        {
+          "label": "Sipariş",
+          "value": "98666",
+          "delta": null,
+          "delta_kind": null
+        },
+        {
+          "label": "AOV",
+          "value": "R$ 160.58",
+          "delta": null,
+          "delta_kind": null
+        },
+        {
+          "label": "Aktif Müşteri",
+          "value": "95420",
+          "delta": null,
+          "delta_kind": null
+        },
+        {
+          "label": "5★ Oranı",
+          "value": "57.8%",
+          "delta": null,
+          "delta_kind": null
+        }
+      ],
+      "charts": []
+    },
+    "operations": {
+      "tab": "operations",
+      "kpis": [
+        {
+          "label": "Zamanında %",
+          "value": "92.1%",
+          "delta": null,
+          "delta_kind": null
+        },
+        {
+          "label": "Ort. Teslim Günü",
+          "value": "12.4",
+          "delta": null,
+          "delta_kind": null
+        },
+        {
+          "label": "İptal Oranı",
+          "value": "0.48%",
+          "delta": null,
+          "delta_kind": null
+        },
+        {
+          "label": "Teslim Edilen",
+          "value": "110197",
+          "delta": null,
+          "delta_kind": null
+        }
+      ],
+      "charts": []
+    },
+    "customer": {
+      "tab": "customer",
+      "kpis": [
+        {
+          "label": "Aktif Müşteri",
+          "value": "95420",
+          "delta": null,
+          "delta_kind": null
+        },
+        {
+          "label": "Tek Siparişli",
+          "value": "93099",
+          "delta": null,
+          "delta_kind": null
+        },
+        {
+          "label": "Tekrar Müşteri %",
+          "value": "3.12%",
+          "delta": null,
+          "delta_kind": null
+        },
+        {
+          "label": "Ort. Puan",
+          "value": "4.09",
+          "delta": null,
+          "delta_kind": null
+        }
+      ],
+      "charts": []
+    }
+  }
+}
