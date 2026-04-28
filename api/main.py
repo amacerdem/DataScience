@@ -3,7 +3,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from api.config import get_settings
-from api.routers import ask as ask_router
+from api.routers import ask as ask_router, dashboard as dashboard_router
 
 
 def create_app() -> FastAPI:
@@ -18,6 +18,7 @@ def create_app() -> FastAPI:
     )
 
     app.include_router(ask_router.router)
+    app.include_router(dashboard_router.router)
 
     @app.get("/")
     def root() -> dict[str, str]:
