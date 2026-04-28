@@ -1,0 +1,30 @@
+.venv/
+__pycache__/
+*.pyc
+.DS_Store
+.ipynb_checkpoints/
+
+# data — too large for git, regenerate from raw
+data/raw/
+data/bronze/
+data/silver/
+data/gold/
+data/*.duckdb
+data/*.duckdb.wal
+
+# Power BI binary
+powerbi/*.pbix
+
+# secrets
+.env
+*.kaggle.json
+
+# brainstorming session artifacts (visual companion mockups)
+.superpowers/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+Thumbs.db

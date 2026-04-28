@@ -1,0 +1,220 @@
+// =====================================================================
+// DAX MEASURES — Olist Star Schema
+// Paste each into Power BI: New Measure → name + formula
+// Display Folder set per the comment above each measure
+// Format strings shown after each definition
+// =====================================================================
+
+
+// ---------------------------------------------------------------------
+// Display Folder: Sales
+// ---------------------------------------------------------------------
+
+// Total revenue from order items, excluding freight
+Total Sales =
+SUM ( FactOrderItems[price] )
+// Format: "R$ #,0.00"
+
+// Total freight charged to customers
+Total Freight =
+SUM ( FactOrderItems[freight_value] )
+// Format: "R$ #,0.00"
+
+// GMV — Gross Merchandise Volume (sales + freight) — top-line headline
+GMV =
+SUM ( FactOrderItems[total_value] )
+// Format: "R$ #,0.00"
+
+// Total payments collected (incl. installments) — should ≈ GMV
+Total Payments =
+SUM ( FactPayments[payment_value] )
+// Format: "R$ #,0.00"
+
+// Distinct orders
+Order Count =
+DISTINCTCOUNT ( FactOrderItems[order_id] )
+// Format: "#,0"
+
+// Total line items sold
+Items Sold =
+COUNTROWS ( FactOrderItems )
+// Format: "#,0"
+
+// Average order value
+Average Order Value =
+DIVIDE ( [GMV], [Order Count] )
+// Format: "R$ #,0.00"
+
+// Average price per item
+Average Item Price =
+AVERAGE ( FactOrderItems[price] )
+// Format: "R$ #,0.00"
+
+
+// ---------------------------------------------------------------------
+// Display Folder: Customers
+// ---------------------------------------------------------------------
+
+// Distinct customers in the filtered period
+Active Customers =
+DISTINCTCOUNT ( FactOrderItems[customer_key] )
+// Format: "#,0"
+
+// Repeat customer share (>1 order across history)
+Repeat Customer % =
+VAR _withRepeat =
+    CALCULATE (
+        DISTINCTCOUNT ( FactOrderItems[customer_key] ),
+        DimCustomer[is_repeat_customer] = TRUE ()
+    )
+RETURN
+    DIVIDE ( _withRepeat, [Active Customers] )
+// Format: "0.0%"
+
+// New customers (first-ever order in current filter)
+New Customers =
+VAR _customersInPeriod =
+    VALUES ( FactOrderItems[customer_key] )
+VAR _firstOrderDateByCustomer =
+    SUMMARIZE (
+        ALL ( FactOrderItems ),
+        FactOrderItems[customer_key],
+        "FirstDate", MIN ( FactOrderItems[purchase_date_key] )
+    )
+VAR _periodStart = MIN ( DimDate[date_key] )
+VAR _periodEnd   = MAX ( DimDate[date_key] )
+RETURN
+    COUNTROWS (
+        FILTER (
+            _firstOrderDateByCustomer,
+            [FirstDate] >= _periodStart && [FirstDate] <= _periodEnd
+        )
+    )
+// Format: "#,0"
+
+
+// ---------------------------------------------------------------------
+// Display Folder: Operations
+// ---------------------------------------------------------------------
+
+// Average delivery time in days (purchase → delivered)
+Avg Delivery Days =
+AVERAGE ( FactOrderItems[delivery_days] )
+// Format: "0.0"
+
+// On-time delivery percentage
+On-Time Delivery % =
+DIVIDE (
+    CALCULATE ( SUM ( FactOrderItems[on_time_flag] ),
+                NOT ( ISBLANK ( FactOrderItems[delivery_days] ) ) ),
+    CALCULATE ( COUNTROWS ( FactOrderItems ),
+                NOT ( ISBLANK ( FactOrderItems[delivery_days] ) ) )
+)
+// Format: "0.0%"
+
+// Delivered orders (vs cancelled / pending)
+Delivered Orders =
+CALCULATE (
+    [Order Count],
+    FactOrderItems[order_status] = "delivered"
+)
+// Format: "#,0"
+
+// Cancellation rate
+Cancellation Rate =
+DIVIDE (
+    CALCULATE ( [Order Count], FactOrderItems[order_status] = "canceled" ),
+    [Order Count]
+)
+// Format: "0.0%"
+
+
+// ---------------------------------------------------------------------
+// Display Folder: Reviews
+// ---------------------------------------------------------------------
+
+// Average review score (1–5)
+Avg Review Score =
+AVERAGE ( FactReviews[review_score] )
+// Format: "0.00"
+
+// Review response rate (% of orders that got a review)
+Review Response Rate =
+DIVIDE (
+    DISTINCTCOUNT ( FactReviews[order_id] ),
+    [Order Count]
+)
+// Format: "0.0%"
+
+// 5-star share
+5-Star % =
+DIVIDE (
+    CALCULATE ( COUNTROWS ( FactReviews ), FactReviews[review_score] = 5 ),
+    COUNTROWS ( FactReviews )
+)
+// Format: "0.0%"
+
+
+// ---------------------------------------------------------------------
+// Display Folder: Time Intelligence
+// ---------------------------------------------------------------------
+
+// GMV — Year to Date
+GMV YTD =
+TOTALYTD ( [GMV], DimDate[date] )
+// Format: "R$ #,0.00"
+
+// GMV — Same period last year
+GMV LY =
+CALCULATE ( [GMV], SAMEPERIODLASTYEAR ( DimDate[date] ) )
+// Format: "R$ #,0.00"
+
+// GMV — Year over Year growth %
+GMV YoY % =
+DIVIDE ( [GMV] - [GMV LY], [GMV LY] )
+// Format: "0.0%;-0.0%;—"
+
+// GMV — Month over Month growth %
+GMV MoM % =
+VAR _prev =
+    CALCULATE ( [GMV], DATEADD ( DimDate[date], -1, MONTH ) )
+RETURN
+    DIVIDE ( [GMV] - _prev, _prev )
+// Format: "0.0%;-0.0%;—"
+
+// Rolling 30-day GMV
+GMV Rolling 30D =
+CALCULATE (
+    [GMV],
+    DATESINPERIOD ( DimDate[date], MAX ( DimDate[date] ), -30, DAY )
+)
+// Format: "R$ #,0.00"
+
+
+// ---------------------------------------------------------------------
+// Bonus: Pareto / category mix
+// ---------------------------------------------------------------------
+
+// Category share of total GMV
+Category % of Total =
+DIVIDE (
+    [GMV],
+    CALCULATE ( [GMV], ALL ( DimProduct[category_en] ) )
+)
+// Format: "0.0%"
+
+// Cumulative GMV % (Pareto)
+Cumulative GMV % =
+VAR _currentRev = [GMV]
+VAR _allCats =
+    SUMMARIZE (
+        ALL ( DimProduct[category_en] ),
+        DimProduct[category_en],
+        "rev", [GMV]
+    )
+RETURN
+    DIVIDE (
+        SUMX ( FILTER ( _allCats, [rev] >= _currentRev ), [rev] ),
+        SUMX ( _allCats, [rev] )
+    )
+// Format: "0.0%"
