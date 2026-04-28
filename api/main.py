@@ -3,6 +3,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from api.config import get_settings
+from api.routers import ask as ask_router
 
 
 def create_app() -> FastAPI:
@@ -15,6 +16,8 @@ def create_app() -> FastAPI:
         allow_methods=["GET", "POST"],
         allow_headers=["*"],
     )
+
+    app.include_router(ask_router.router)
 
     @app.get("/")
     def root() -> dict[str, str]:
