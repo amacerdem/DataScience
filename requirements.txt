@@ -7,3 +7,14 @@ ipykernel
 matplotlib
 python-dotenv
 openai>=1.40
+fastapi>=0.115
+uvicorn[standard]>=0.30
+pydantic>=2.7
+pydantic-settings>=2.5
+sse-starlette>=2.1
+httpx>=0.27
+pytest>=8.0
+pytest-asyncio>=0.24
+anthropic>=0.97
+pymssql>=2.3
+sqlalchemy>=2.0
